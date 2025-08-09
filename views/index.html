@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🚧 Coming Soon | SRIRAM VARMA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #2c3e50, #3498db);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      height: 100vh;
+      padding: 20px;
+      position: relative;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeSlideIn {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .rotating {
+      display: inline-block;
+      animation: rotate 5s linear infinite;
+    }
+
+    .gear {
+      font-size: 1.8rem;
+      margin: 0 5px;
+    }
+
+    .gear.small {
+      font-size: 1.2rem;
+      animation-duration: 3s;
+    }
+
+    .gear.large {
+      font-size: 2.5rem;
+      animation-duration: 8s;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      animation: fadeSlideIn 1s ease forwards;
+    }
+
+    .subtext {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      opacity: 0.9;
+      animation: fadeSlideIn 1s ease forwards;
+      animation-delay: 0.4s;
+    }
+
+    .status {
+      font-size: 1.3rem;
+      margin-bottom: 25px;
+      animation: fadeSlideIn 1s ease forwards;
+      animation-delay: 0.6s;
+    }
+
+    .tools {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px 30px;
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 60px;
+      animation: fadeSlideIn 1s ease forwards;
+      animation-delay: 0.8s;
+    }
+
+    .tools p {
+      margin: 8px 0;
+      font-size: 1rem;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 20px;
+      font-size: 0.9rem;
+      color: #ccc;
+      width: 100%;
+      text-align: center;
+      animation: fadeSlideIn 1s ease forwards;
+      animation-delay: 1s;
+    }
+
+    .highlight {
+      font-weight: bold;
+      color: #00FFD1; /* Neon cyan for modern effect */
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🚧 Coming Soon</h1>
+
+  <p class="subtext">
+    Our website is under construction and launching shortly! <span>🏗️</span>
+  </p>
+
+  <div class="status">
+    <span class="rotating">⏳</span> Please wait... Work in Progress
+    
+    <span class="rotating gear large">⚙️</span>
+  </div>
+
+  <div class="tools">
+    <p><strong>🧰 Tools & Technologies:</strong></p>
+    <p>💻 HTML5, 🎨 CSS3, 🐙 GitHub, 🚀 CI/CD</p>
+    <p>📦 Jenkins, 🐳 Docker, 🌐 GitHub Pages</p>
+  </div>
+
+  <div class="footer">
+    🔨 Built with ❤️ by <span class="highlight">SRIRAM VARMA BHUPATHIRAJU</span>
+  </div>
+
+</body>
+</html>
