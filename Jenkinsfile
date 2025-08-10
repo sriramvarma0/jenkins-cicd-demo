@@ -2,41 +2,57 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USER = 'your-dockerhub-username'      // Change this
-        DOCKERHUB_REPO = 'jenkins-cicd-demo'            // Change if repo name different
-        IMAGE_TAG = 'latest'
+        DOCKERHUB_USER = 'sriramvarma0'  // change this
+        IMAGE_NAME = 'jenkins-cicd-demo'
     }
 
     stages {
-        stage('Build Docker Image') {
+        stage('Checkout') {
             steps {
-                script {
-                    echo "📦 Building Docker image..."
-                    sh 'docker build -t $DOCKERHUB_USER/$DOCKERHUB_REPO:$IMAGE_TAG .'
-                }
+                git branch: 'main', url: 'https://github.com/sriramvarma0/jenkins-cicd-demo.git'
             }
         }
 
-        stage('Run Tests') {
+        stage('Build Node.js App') {
             steps {
-                script {
-                    echo "🧪 Running tests..."
-                    sh 'npm install'
-                    sh 'echo "✅ All tests passed (placeholder)"'
-                }
+                sh '''
+                echo "📦 Installing dependencies..."
+                npm install
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                echo "🐳 Building Docker image..."
+                docker build -t $DOCKERHUB_USER/$IMAGE_NAME:latest .
+                '''
             }
         }
 
         stage('Push to DockerHub') {
             steps {
-                script {
-                    echo "🚀 Pushing image to DockerHub..."
-                }
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push $DOCKERHUB_USER/$DOCKERHUB_REPO:$IMAGE_TAG'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', 
+                                                  usernameVariable: 'DOCKER_USER', 
+                                                  passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                    echo "🔑 Logging into DockerHub..."
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    echo "📤 Pushing image to DockerHub..."
+                    docker push $DOCKERHUB_USER/$IMAGE_NAME:latest
+                    '''
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build & push completed successfully!'
+        }
+        failure {
+            echo '❌ Build failed!'
         }
     }
 }
