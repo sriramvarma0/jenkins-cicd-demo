@@ -1,58 +1,86 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        DOCKERHUB_USER = 'sriramvarma0'  // change this
-        IMAGE_NAME = 'jenkins-cicd-demo'
+  environment {
+    DOCKERHUB_REPO = 'sriramvarma0/jenkins-cicd-demo' // change if different
+    GIT_SHORT_SHA  = "${env.GIT_COMMIT?.take(7) ?: 'dev'}"
+  }
+
+  tools { nodejs 'Node20' }
+
+  options { timestamps(); ansiColor('xterm') }
+
+  triggers { pollSCM('H/2 * * * *') }
+
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/sriramvarma0/jenkins-cicd-demo.git'
-            }
+    stage('Install & Test') {
+      steps {
+        script {
+          if (isUnix()) {
+            sh 'npm ci'
+            sh 'npm test'
+          } else {
+            bat 'npm ci'
+            bat 'npm test'
+          }
         }
-
-        stage('Build Node.js App') {
-            steps {
-                sh '''
-                echo "📦 Installing dependencies..."
-                npm install
-                '''
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh '''
-                echo "🐳 Building Docker image..."
-                docker build -t $DOCKERHUB_USER/$IMAGE_NAME:latest .
-                '''
-            }
-        }
-
-        stage('Push to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', 
-                                                  usernameVariable: 'DOCKER_USER', 
-                                                  passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                    echo "🔑 Logging into DockerHub..."
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    echo "📤 Pushing image to DockerHub..."
-                    docker push $DOCKERHUB_USER/$IMAGE_NAME:latest
-                    '''
-                }
-            }
-        }
+      }
     }
 
-    post {
-        success {
-            echo '✅ Build & push completed successfully!'
+    stage('Build Docker Image') {
+      steps {
+        script {
+          def tagLatest = "${DOCKERHUB_REPO}:latest"
+          def tagSha    = "${DOCKERHUB_REPO}:${GIT_SHORT_SHA}"
+          if (isUnix()) {
+            sh "docker build -t ${tagLatest} -t ${tagSha} ."
+          } else {
+            bat "docker build -t ${tagLatest} -t ${tagSha} ."
+          }
         }
-        failure {
-            echo '❌ Build failed!'
-        }
+      }
     }
+
+    stage('Push to Docker Hub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                                          usernameVariable: 'DH_USER',
+                                          passwordVariable: 'DH_PASS')]) {
+          script {
+            def tagLatest = "${DOCKERHUB_REPO}:latest"
+            def tagSha    = "${DOCKERHUB_REPO}:${GIT_SHORT_SHA}"
+            if (isUnix()) {
+              sh 'echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin'
+              sh "docker push ${tagLatest}"
+              sh "docker push ${tagSha}"
+            } else {
+              bat 'echo %DH_PASS% | docker login -u %DH_USER% --password-stdin'
+              bat "docker push ${tagLatest}"
+              bat "docker push ${tagSha}"
+            }
+          }
+        }
+      }
+    }
+
+    stage('Deploy (demo)') {
+      when { expression { return params.DEPLOY?.toBoolean() } }
+      steps {
+        script {
+          def image = "${DOCKERHUB_REPO}:${GIT_SHORT_SHA}"
+          if (isUnix()) {
+            sh "docker rm -f jenkins-cicd-demo || true"
+            sh "docker run -d --name jenkins-cicd-demo -p 3000:3000 ${image}"
+          } else {
+            bat "docker rm -f jenkins-cicd-demo || ver > nul"
+            bat "docker run -d --name jenkins-cicd-demo -p 3000:3000 ${image}"
+          }
+        }
+      }
+    }
+  }
 }
