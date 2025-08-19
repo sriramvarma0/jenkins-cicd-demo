@@ -8,7 +8,7 @@ pipeline {
 
   tools { nodejs 'Node20' }
 
-  options { timestamps(); ansiColor('xterm') }
+  options { timestamps() }
 
   triggers { pollSCM('H/2 * * * *') }
 
